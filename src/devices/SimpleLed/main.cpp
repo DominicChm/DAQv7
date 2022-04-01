@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "core/BusAdapter.h"
 
-BusAdapter bus(Serial, D1, 0x00, 115200);
+BusAdapter<128> bus(Serial, D1, 0x01, 9600);
 
 void parse_data(uint8_t *data, size_t size) {
     uint8_t cmd = data[0];
@@ -10,6 +10,7 @@ void parse_data(uint8_t *data, size_t size) {
 //                  bus.header().response_expected,
 //                  (uint16_t) bus.header().data_size,
 //                  cmd);
+    //Serial.println(cmd);
 
     if (bus.header().address != bus.address) return;
 
@@ -20,37 +21,45 @@ void parse_data(uint8_t *data, size_t size) {
             bus.respond(nullptr, 0);
             break;
 
+        case 0x01: //ON
+            digitalWrite(LED_BUILTIN, LOW);
+            break;
+
+        case 0x02: //OFF
+            digitalWrite(LED_BUILTIN, HIGH);
+            break;
+
     }
 }
 
 void setup() {
+    Serial1.begin(9600);
     Serial.begin(9600);
     bus.begin();
+    Serial.println("start");
+
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 
 uint64_t last_print = 0;
-bool ledState = false;
 
 void loop() {
+    if (Serial1.available()) {
+        //Serial.println(Serial1.peek());
+    }
     bus.loop();
     if (bus.available()) {
         uint8_t data[255];
         parse_data(data, bus.read(data, 255));
     }
 
-    if (millis() - last_print > 1000) {
-        //Serial.println(bus.parseState);
-        if (ledState) {
-            uint8_t dat = 0x01;
-            bus.write(&dat, 1, 0x01, false);
-        } else {
-            uint8_t dat = 0x02;
-            bus.write(&dat, 1, 0x01, false);
-        }
-
-        ledState = !ledState;
-        last_print = millis();
-    }
+//    if(millis() - last_print > 1000) {
+//        Serial.println(bus.parseState);
+//        last_print = millis();
+//    }
 }
 

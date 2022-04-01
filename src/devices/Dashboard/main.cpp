@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <core/ApplicationProtocol.h>
 #include "core/BusAdapter.h"
 #include "core/DeviceMaster.h"
 #include "device.h"
