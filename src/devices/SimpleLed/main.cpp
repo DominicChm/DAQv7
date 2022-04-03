@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "core/BusAdapter.h"
 
-BusAdapter<128> bus(Serial, D1, 0x01, 9600);
+BusAdapter<128> bus(Serial, {0x01, D1, 9600, 0, 0});
 
 void parse_data(uint8_t *data, size_t size) {
     uint8_t cmd = data[0];
@@ -12,7 +12,7 @@ void parse_data(uint8_t *data, size_t size) {
 //                  cmd);
     //Serial.println(cmd);
 
-    if (bus.header().address != bus.address) return;
+    if (bus.header().address != bus.address()) return;
 
 
     switch (cmd) {
