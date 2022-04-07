@@ -8,16 +8,40 @@
 #include <core/DeviceDriverBase.h>
 
 template<size_t buffer_size>
-class SimpleLEDMaster : public DeviceDriverBase<buffer_size> {
-    explicit SimpleLEDMaster(BusAdapter<buffer_size> &bus) : DeviceDriverBase<buffer_size>(bus) {
+class SimpleLEDDriver : public DeviceDriverBase<buffer_size> {
+public:
+    explicit SimpleLEDDriver(BusAdapter<buffer_size> &bus) : DeviceDriverBase<buffer_size>(bus) {
 
     }
 
-    virtual void on_response_request(uint8_t cmd, uint8_t *data, size_t size) = 0;
+    bool led_state() {
+        return led_state;
+    }
 
-    virtual void on_packet(uint8_t address, bool response_requested, uint8_t cmd, uint8_t *data, size_t size) = 0;
+private:
+    bool _led_state = false;
 
-    virtual void on_addressed_packet(bool response_requested, uint8_t cmd, uint8_t *data, size_t size) = 0;
+    virtual void on_response_request(uint8_t cmd, uint8_t *data, size_t size) {
+
+    }
+
+    void on_packet(uint8_t address, bool response_requested, uint8_t cmd, uint8_t *data, size_t size) {
+        // On any packet... Unused here.
+    }
+
+    void on_global_packet(uint8_t cmd, uint8_t *data, size_t size) {
+
+    }
+
+    void on_addressed_packet(bool response_requested, uint8_t cmd, uint8_t *data, size_t size) {
+        switch (cmd) {
+            case 0x01: //LED ON
+                _led_state = false;
+
+            case 0x02: //LED OFF
+                _led_state = true;
+        }
+    }
 };
 
 #endif //DAQV7_SIMPLELEDMASTER_H

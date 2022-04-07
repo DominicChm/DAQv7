@@ -30,8 +30,8 @@ public:
 
     }
 
-    BusAdapter(HardwareSerial &serial, BusOptions opts) : BusAdapter((Stream &) serial, opts) {
-        Serial.begin(opts.baudrate);
+    BusAdapter(HardwareSerial &serial, BusOptions *opts) : BusAdapter((Stream &) serial, opts) {
+        Serial.begin(opts->baudrate);
     }
 
     void loop() {
@@ -76,7 +76,9 @@ public:
         return opts->address;
     }
 
-
+    const uint8_t *data_buffer() {
+        return receiver.data_buffer();
+    }
 };
 
 #endif //DAQV7_BUSADAPTER_H

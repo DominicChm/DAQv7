@@ -18,7 +18,7 @@ public:
 
     void loop() {
         if (bus->available()) {
-
+            bus.data_buffer()[0] = 5;
         }
     }
 
@@ -27,6 +27,8 @@ public:
     virtual void on_packet(uint8_t address, bool response_requested, uint8_t cmd, uint8_t *data, size_t size) = 0;
 
     virtual void on_addressed_packet(bool response_requested, uint8_t cmd, uint8_t *data, size_t size) = 0;
+
+    virtual void on_global_packet(uint8_t cmd, uint8_t *data, size_t size) = 0;
 };
 
 #endif //DAQV7_DEVICEDRIVERBASE_H

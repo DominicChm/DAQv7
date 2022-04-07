@@ -174,6 +174,10 @@ private:
         return controller.is_receiving() && opts->parser_timeout_ms != 0 &&
                millis() - parse_started_ms > PARSER_TIMEOUT_MS;
     }
+
+    const uint8_t *data_buffer() {
+        return data;
+    }
 };
 
 #endif //DAQV7_RECIEVER_H
