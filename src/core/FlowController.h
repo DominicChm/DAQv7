@@ -5,8 +5,8 @@
 #ifndef DAQV7_FLOWCONTROLLER_H
 #define DAQV7_FLOWCONTROLLER_H
 
-#include "common/BUS.h"
-#include "../common/BUS.h"
+#include "BUS.h"
+#include "BUS.h"
 
 class FlowController {
     bool bus_locked = false;

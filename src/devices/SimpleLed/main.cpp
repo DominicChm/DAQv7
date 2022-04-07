@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include "core/BusAdapter.h"
+#include "SimpleLEDDriver.h"
 
 BusAdapter<128> bus(Serial, {0x01, D1, 9600, 0, 0});
+SimpleLEDMaster mas(bus);
 
 void parse_data(uint8_t *data, size_t size) {
     uint8_t cmd = data[0];

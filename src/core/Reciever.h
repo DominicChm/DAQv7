@@ -5,7 +5,7 @@
 #ifndef DAQV7_RECIEVER_H
 #define DAQV7_RECIEVER_H
 
-#include "common/BUS.h"
+#include "BUS.h"
 
 template<size_t buffer_size>
 class Receiver {
