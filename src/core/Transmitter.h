@@ -8,13 +8,13 @@
 template<size_t buffer_size>
 class Transmitter {
 public:
-    Transmitter(Stream &serial, FlowController &controller, BusOptions opts) :
+    Transmitter(Stream &serial, FlowController &controller, BusOptions *opts) :
             serial(serial),
             controller(controller),
             opts(opts) {
-        pinMode(opts.pin_driver_enable, OUTPUT);
-        digitalWrite(opts.pin_driver_enable, LOW);
-        transmission_finish_delay = 1000000 * 8 / opts.baudrate; //BAUDRATE
+        pinMode(opts->pin_driver_enable, OUTPUT);
+        digitalWrite(opts->pin_driver_enable, LOW);
+        transmission_finish_delay = 1000000 * 8 / opts->baudrate; //BAUDRATE
     }
 
     bool begin() {
@@ -55,6 +55,10 @@ private:
         TRANSMITTING,
         DELAY_DISABLE,
     };
+
+    uint64_t transmission_finished_us = 0;
+    uint64_t transmission_finish_delay = 0;
+
     State state = IDLE;
 
     // Set at construction time as the number of free bytes in the serial tx buffer.
@@ -63,25 +67,22 @@ private:
 
     Stream &serial;
     FlowController &controller;
-    BusOptions opts;
-
-    uint64_t transmission_finished_us = 0;
-    uint64_t transmission_finish_delay = 0;
+    BusOptions *opts;
 
     // Header FSM vars
     PacketHeader transmitted_header;
 
     // TX buffer
-    uint8_t transmit_buf[buffer_size];
     uint8_t transmit_size = 0;
     uint8_t transmit_idx = 0;
+    uint8_t transmit_buf[buffer_size];
 
     void fsm() {
         switch (state) {
             case IDLE:
                 // Wait for some data to be put into our buffer.
                 if (transmit_idx < transmit_size) { // A wild Unwritten Data has appeared!
-                    digitalWrite(opts.pin_driver_enable, HIGH); // Enable the bus drivers
+                    digitalWrite(opts->pin_driver_enable, HIGH); // Enable the bus drivers
                     state = BUFFERING;
                 }
                 break;
@@ -126,7 +127,7 @@ private:
                 // Disabling early chops the last byte off the packet, which is bad :)
                 if (micros() - transmission_finished_us > transmission_finish_delay) {
                     controller.end_transmit(transmitted_header);
-                    digitalWrite(opts.pin_driver_enable, LOW);
+                    digitalWrite(opts->pin_driver_enable, LOW);
                     state = IDLE;
                 }
                 break;

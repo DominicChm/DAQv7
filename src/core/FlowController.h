@@ -16,7 +16,7 @@ class FlowController {
 
     uint64_t lock_started_ms = 0;
 
-    BusOptions opts;
+    BusOptions *opts;
 
 
     void ingest_header(PacketHeader header) {
@@ -26,14 +26,14 @@ class FlowController {
     }
 
 public:
-    FlowController(BusOptions opts) : opts(opts) {}
+    FlowController(BusOptions *opts) : opts(opts) {}
 
     void loop() {
         if (lock_timed_out()) bus_locked = false;
     }
 
     bool lock_timed_out() {
-        return bus_locked && opts.lock_timeout_ms != 0 && (millis() - lock_started_ms > BUS_TIMEOUT_MS);
+        return bus_locked && opts->lock_timeout_ms != 0 && (millis() - lock_started_ms > BUS_TIMEOUT_MS);
     }
 
     void receive_started() {
@@ -50,7 +50,7 @@ public:
     }
 
     bool begin_response() {
-        if (!bus_locked || last_header.address != opts.address || receiving || transmitting) return false;
+        if (!bus_locked || last_header.address != opts->address || receiving || transmitting) return false;
         transmitting = true;
         return true;
     }

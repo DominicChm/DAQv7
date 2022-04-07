@@ -16,13 +16,13 @@
  */
 template<size_t buffer_size = 256>
 class BusAdapter {
-    BusOptions opts;
+    BusOptions *opts;
 
     FlowController controller;
     Receiver<buffer_size> receiver;
     Transmitter<buffer_size> transmitter;
 public:
-    BusAdapter(Stream &serial, BusOptions opts) :
+    BusAdapter(Stream &serial, BusOptions *opts) :
             opts(opts),
             controller(FlowController(opts)),
             receiver(Receiver<buffer_size>(serial, controller, opts)),
@@ -73,7 +73,7 @@ public:
     }
 
     uint8_t address() {
-        return opts.address;
+        return opts->address;
     }
 
 

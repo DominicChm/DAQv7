@@ -10,7 +10,7 @@
 template<size_t buffer_size>
 class Receiver {
 public:
-    Receiver(Stream &serial, FlowController &controller, BusOptions opts) :
+    Receiver(Stream &serial, FlowController &controller, BusOptions *opts) :
             serial(serial),
             controller(controller),
             opts(opts) {}
@@ -55,21 +55,21 @@ private:
 
     Stream &serial;
     FlowController &controller;
-    BusOptions opts;
+    BusOptions *opts;
 
     PacketHeader packet_header;
     PacketTrailer packet_trailer;
     State state;
 
-    size_t packet_idx = 0;
+    uint16_t packet_idx = 0;
     uint64_t parse_started_ms = 0;
 
     uint32_t num_oversized_packets;
 
     // Data buffer
     uint8_t data[buffer_size];
-    size_t data_head;
-    size_t data_tail; //Used for reading the FIFO cache.
+    uint16_t data_head;
+    uint16_t data_tail; //Used for reading the FIFO cache.
 
 
     void timeout_receive() {
@@ -171,7 +171,7 @@ private:
     }
 
     bool timed_out() {
-        return controller.is_receiving() && opts.parser_timeout_ms != 0 &&
+        return controller.is_receiving() && opts->parser_timeout_ms != 0 &&
                millis() - parse_started_ms > PARSER_TIMEOUT_MS;
     }
 };

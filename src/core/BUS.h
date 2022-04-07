@@ -22,7 +22,7 @@
 #define TRAILER_INDEX_CHECK_MSB 1
 
 struct PacketHeader {
-    size_t data_size;
+    uint16_t data_size;
     bool response_expected;
     uint8_t address;
 };
@@ -38,7 +38,7 @@ struct BusOptions {
     uint32_t baudrate;
     uint64_t parser_timeout_ms;
     uint64_t lock_timeout_ms;
-};
+} __attribute__((packed));
 
 // Writes a packet header into the passed buffer
 PacketHeader generate_header(uint8_t *dest, uint16_t data_size, uint8_t dest_address, bool response_required) {
