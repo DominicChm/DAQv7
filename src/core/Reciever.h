@@ -175,7 +175,8 @@ private:
                millis() - parse_started_ms > PARSER_TIMEOUT_MS;
     }
 
-    const uint8_t *data_buffer() {
+    const uint8_t *read_data_buffer() {
+        data_tail = data_head;
         return data;
     }
 };

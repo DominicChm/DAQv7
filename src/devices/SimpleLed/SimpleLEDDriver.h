@@ -21,20 +21,17 @@ public:
 private:
     bool _led_state = false;
 
-    virtual void on_response_request(uint8_t cmd, uint8_t *data, size_t size) {
-
+    virtual void on_packet(uint8_t address, bool response_requested, uint8_t cmd, const uint8_t *data, size_t size) {
+        // Called with bus packets that weren't addressed to us.
     }
 
-    void on_packet(uint8_t address, bool response_requested, uint8_t cmd, uint8_t *data, size_t size) {
-        // On any packet... Unused here.
-    }
-
-    void on_global_packet(uint8_t cmd, uint8_t *data, size_t size) {
-
-    }
-
-    void on_addressed_packet(bool response_requested, uint8_t cmd, uint8_t *data, size_t size) {
+    virtual void on_addressed_packet(bool response_requested, uint8_t cmd, const uint8_t *data, size_t size) {
+        uint8_t *resp;
         switch (cmd) {
+            case 0x00: //TODO: IMPLEMENT IN DEVICE BASE
+                resp = {};
+                this->bus.respond(resp, 0);
+
             case 0x01: //LED ON
                 _led_state = false;
 
@@ -42,6 +39,10 @@ private:
                 _led_state = true;
         }
     }
+
+    virtual void on_global_packet(uint8_t cmd, const uint8_t *data, size_t size) {
+    }
+
 };
 
 #endif //DAQV7_SIMPLELEDMASTER_H

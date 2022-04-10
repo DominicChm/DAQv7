@@ -76,8 +76,8 @@ public:
         return opts->address;
     }
 
-    const uint8_t *data_buffer() {
-        return receiver.data_buffer();
+    const uint8_t *read_data_buffer() {
+        return receiver.read_data_buffer();
     }
 };
 
