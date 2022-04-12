@@ -12,31 +12,32 @@ public:
             serial(serial),
             controller(controller),
             opts(opts) {
+        // Init the driver pin state.
         pinMode(opts->pin_driver_enable, OUTPUT);
         digitalWrite(opts->pin_driver_enable, LOW);
-        transmission_finish_delay = 1000000 * 8 / opts->baudrate; //BAUDRATE
+
+        // How long, in us, we delay disabling drivers for. (Look at state DELAY_DISABLE for why this is needed)
+        transmission_finish_delay = 1000000 * 8 / opts->baudrate;
     }
 
     bool begin() {
-        hw_tx_buffer_size = serial.availableForWrite();
-        return true;
+        return true; // Currently, mostly unused.
     }
 
     void loop() {
         fsm();
-
-        // Check and handle timeouts
     }
 
-
     // Writes a packet to the bus. Non-blocking writes are performed by default.
-    // Byte-by-byte transmission (manual metering) is HANDLED BY THE CLASS!
+    // async transmission is HANDLED BY THE CLASS!
+    // (IE DON'T write byte-by-byte. A new packet is generated with every write!)
     bool write(uint8_t *payload, size_t size, uint8_t dest_address, bool response_required) {
         if (!controller.begin_transmit(dest_address)) return false;
 
         return write_bus(payload, size, dest_address, response_required);
     }
 
+    // Writes a global packet to the bus. Main use (for example) is to notify all modules
     bool write_global(uint8_t *src, size_t size) {
         return write(src, size, GLOBAL_ADDRESS, false);
     }
@@ -62,8 +63,12 @@ private:
     State state = IDLE;
 
     // Set at construction time as the number of free bytes in the serial tx buffer.
-    // Manually writing to the bus before initializing the adapter will cause this to be off!!
-    int hw_tx_buffer_size = 0;
+#ifdef SERIAL_TX_BUFFER_SIZE
+    int hw_tx_buffer_size = SERIAL_TX_BUFFER_SIZE; //AVR definition
+#elifdef UART_TX_FIFO_SIZE
+    int hw_tx_buffer_size = UART_TX_FIFO_SIZE; //ESP definition
+#endif
+
 
     Stream &serial;
     FlowController &controller;
@@ -89,7 +94,7 @@ private:
 
 
             case BUFFERING:
-                if(!controller.is_transmitting()) state = IDLE;
+                if (!controller.is_transmitting()) state = IDLE;
 
                 // Buffer the data in our buffer into the HW serial TX buffer
                 if (hw_tx_buffer_size > 0) {
@@ -110,10 +115,10 @@ private:
 
 
             case TRANSMITTING:
-                if(!controller.is_transmitting()) state = IDLE;
+                if (!controller.is_transmitting()) state = IDLE;
 
                 // Wait until the hardware TX buffer is empty (available = size)
-                if (hw_tx_buffer_size - serial.availableForWrite() <= 0 ) {
+                if (hw_tx_buffer_size - serial.availableForWrite() <= 0) {
                     transmission_finished_us = micros();
                     state = DELAY_DISABLE;
                 }
@@ -121,7 +126,7 @@ private:
 
 
             case DELAY_DISABLE:
-                if(!controller.is_transmitting()) state = IDLE;
+                if (!controller.is_transmitting()) state = IDLE;
                 // Delay disabling RS-485 drivers for one extra byte.
                 // The HW tx buffer "looks" empty while the last byte is transmitting.
                 // Disabling early chops the last byte off the packet, which is bad :)
